@@ -80,8 +80,8 @@ After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/root/fractald-0.2.1-x86_64-linux-gnu
-ExecStart=/root/fractald-0.2.1-x86_64-linux-gnu/bin/bitcoind -datadir=/root/fractald-0.2.1-x86_64-linux-gnu/data/ -maxtipage=504576000
+WorkingDirectory=/home/pool/fractald-0.2.1-x86_64-linux-gnu
+ExecStart=/home/pool/fractald-0.2.1-x86_64-linux-gnu/bin/bitcoind -datadir=/home/pool/fractald-0.2.1-x86_64-linux-gnu/data/ -maxtipage=504576000
 Restart=always
 RestartSec=3
 LimitNOFILE=infinity
@@ -96,8 +96,8 @@ EOF
 
     # 启动并使服务在启动时自动启动
     echo "启动 fractald 服务并设置为开机自启..."
-    sudo systemctl start fractald
     sudo systemctl enable fractald
+    sudo systemctl start fractald
 
     echo "安装节点完成。"
     
@@ -117,7 +117,7 @@ function view_logs() {
 # 创建钱包函数
 function create_wallet() {
     echo "创建钱包..."
-    cd /root/fractald-0.2.1-x86_64-linux-gnu/bin && ./bitcoin-wallet -wallet=wallet -legacy create
+    cd /home/pool/fractald-0.2.1-x86_64-linux-gnu/bin && ./bitcoin-wallet -wallet=wallet -legacy create
     
     # 提示用户按任意键返回主菜单
     read -p "按任意键返回主菜单..."
@@ -128,89 +128,18 @@ function view_private_key() {
     echo "正在查看私钥..."
     
     # 进入 fractald 目录
-    cd /root/fractald-0.2.1-x86_64-linux-gnu/bin
+    cd /home/pool/fractald-0.2.1-x86_64-linux-gnu/bin
     
     # 使用 bitcoin-wallet 导出私钥
-    ./bitcoin-wallet -wallet=/root/.bitcoin/wallets/wallet/wallet.dat -dumpfile=/root/.bitcoin/wallets/wallet/MyPK.dat dump
+    ./bitcoin-wallet -wallet=/home/.bitcoinfractal/wallets/wallet/wallet.dat -dumpfile=/home/pool/.bitcoinfractal/wallets/wallet/MyPK.dat dump
     
     # 解析并显示私钥
-    awk -F 'checksum,' '/checksum/ {print "钱包的私钥是:" $2}' /root/.bitcoin/wallets/wallet/MyPK.dat
+    awk -F 'checksum,' '/checksum/ {print "钱包的私钥是:" $2}' /home/pool/.bitcoinfractal/wallets/wallet/MyPK.dat
     
     # 提示用户按任意键返回主菜单
     read -p "按任意键返回主菜单..."
 }
 
-# 更新脚本函数
-function update_script() {
-    echo "开始更新脚本..."
-
-    # 删除旧版本 fractald 目录
-    echo "删除旧版本 fractald 目录..."
-    sudo rm -rf /root/fractald-0.2.0-x86_64-linux-gnu
-
-    # 下载 fractald 库
-    echo "下载 fractald 库..."
-    wget https://github.com/fractal-bitcoin/fractald-release/releases/download/v0.2.1/fractald-0.2.1-x86_64-linux-gnu.tar.gz
-
-    # 提取 fractald 库
-    echo "提取 fractald 库..."
-    tar -zxvf fractald-0.2.1-x86_64-linux-gnu.tar.gz
-
-    # 进入 fractald 目录
-    echo "进入 fractald 目录..."
-    cd fractald-0.2.1-x86_64-linux-gnu
-
-    # 创建 data 目录
-    echo "创建 data 目录..."
-    mkdir data
-
-    # 复制配置文件到 data 目录
-    echo "复制配置文件到 data 目录..."
-    cp ./bitcoin.conf ./data
-
-    # 创建 systemd 服务文件
-    echo "创建 systemd 服务文件..."
-    sudo tee /etc/systemd/system/fractald.service > /dev/null <<EOF
-[Unit]
-Description=Fractal Node
-After=network.target
-
-[Service]
-User=root
-WorkingDirectory=/root/fractald-0.2.1-x86_64-linux-gnu
-ExecStart=/root/fractald-0.2.1-x86_64-linux-gnu/bin/bitcoind -datadir=/root/fractald-0.2.1-x86_64-linux-gnu/data/ -maxtipage=504576000
-Restart=always
-RestartSec=3
-LimitNOFILE=infinity
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    # 重新加载 systemd 管理器配置
-    echo "重新加载 systemd 管理器配置..."
-    sudo systemctl daemon-reload
-
-    # 启动并使服务在启动时自动启动
-    echo "启动 fractald 服务并设置为开机自启..."
-    sudo systemctl start fractald
-    sudo systemctl enable fractald
-
-    echo "安装节点完成。"
-    
-    # 提示用户按任意键返回主菜单
-    read -p "按任意键返回主菜单..."
-}
-
-# 备份钱包函数
-function backup_wallet() {
-    echo "开始备份钱包..."
-
-    # 备份钱包目录
-    sudo cp -r /root/.bitcoin/wallets/wallet /root/wallet-backup
-
-    echo "钱包备份完成。备份文件保存在 /root/wallet-backup"
-}
 
 # 启动主菜单
 main_menu
